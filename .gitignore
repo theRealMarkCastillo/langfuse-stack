@@ -1,0 +1,9 @@
+# Secrets — never commit the populated env file
+.env
+.env.*
+!.env.example
+
+# Local docker artefacts
+**/*.log
+docker-data/
+backups/
