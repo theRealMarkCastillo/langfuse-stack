@@ -13,11 +13,11 @@ Six services wired together. Inbound traffic only reaches the two front-door ser
 | Service           | Image                                       | Purpose                                                | Host port |
 |-------------------|---------------------------------------------|--------------------------------------------------------|-----------|
 | `langfuse-web`    | `docker.io/langfuse/langfuse:3`             | Next.js UI + ingestion API (the user-facing app)      | `3000`    |
-| `langfuse-worker` | `docker.io/langfuse/langfuse-worker:3`      | Async processor: writes events to ClickHouse, S3       | `127.0.0.1:3030` (worker health) |
-| `postgres`        | `postgres:${POSTGRES_VERSION:-17}`          | Auth, orgs, projects, users, API keys (relational)     | `127.0.0.1:5432` |
-| `clickhouse`      | `clickhouse/clickhouse-server`              | Columnar store for traces, observations, scores       | `127.0.0.1:8123` (HTTP), `127.0.0.1:9000` (native) |
-| `minio`           | `cgr.dev/chainguard/minio`                  | S3-compatible blob store for events, media, exports    | `9090` (API), `127.0.0.1:9091` (console) |
-| `redis`           | `redis:7`                                   | BullMQ job queue, ingestion buffers                    | `127.0.0.1:6379` |
+| `langfuse-worker` | `docker.io/langfuse/langfuse-worker:3`      | Async processor: writes events to ClickHouse, S3       | _network-only_ |
+| `postgres`        | `postgres:${POSTGRES_VERSION:-17}`          | Auth, orgs, projects, users, API keys (relational)     | _network-only_ |
+| `clickhouse`      | `clickhouse/clickhouse-server`              | Columnar store for traces, observations, scores       | _network-only_ |
+| `minio`           | `cgr.dev/chainguard/minio`                  | S3-compatible blob store for events, media, exports    | `9090` (API only) |
+| `redis`           | `redis:7`                                   | BullMQ job queue, ingestion buffers                    | _network-only_ |
 
 **Request flow for a typical LLM trace:** SDK → `langfuse-web` POST → enqueue on Redis → `langfuse-worker` pops job → writes observation rows to ClickHouse and any blob payload to MinIO → metadata (project, prompt, score) stays in Postgres.
 
@@ -25,7 +25,7 @@ Six services wired together. Inbound traffic only reaches the two front-door ser
 
 ## Secrets & config
 
-All config is read from a single `.env` file. Every variable referenced by `docker-compose.yml` is listed in `.env.example` with a `CHANGEME` placeholder. The compose file falls back to insecure defaults if a variable is missing, so a `.env` file with `CHANGEME` literals will *start* but is not safe.
+All config is read from a single `.env` file. Every variable referenced by `docker-compose.yml` is listed in `.env.example` with sensible local-dev defaults. The compose file falls back to the same defaults if `.env` is missing. Rotate secrets for production with `openssl rand -hex 32`.
 
 Replace these secrets before exposing anything beyond localhost:
 

@@ -7,3 +7,9 @@
 **/*.log
 docker-data/
 backups/
+
+# OS / editor cruft
+.DS_Store
+*.swp
+.idea/
+.vscode/

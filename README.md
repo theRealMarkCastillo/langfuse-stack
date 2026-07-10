@@ -6,7 +6,7 @@ Self-hosted [Langfuse](https://langfuse.com) v3 observability stack on a single 
 
 ```bash
 cp .env.example .env
-# edit .env — replace every CHANGEME value, generate ENCRYPTION_KEY with: openssl rand -hex 32
+# (optional) edit .env to customize passwords and secrets
 
 docker compose up -d
 open http://localhost:3000
@@ -16,22 +16,16 @@ Bootstrap an org/project/user on first boot by filling the `LANGFUSE_INIT_*` var
 
 ## Services
 
-| Port | Service         | Purpose                                            |
-|------|-----------------|----------------------------------------------------|
-| 3000 | langfuse-web    | UI + ingestion API (the only public-facing port)   |
-| 9090 | minio           | S3-compatible blob store (events, media, exports)  |
-| 127.0.0.1:3030 | langfuse-worker | Async processor (health endpoint)            |
-| 127.0.0.1:5432 | postgres       | Auth, orgs, projects, API keys                     |
-| 127.0.0.1:8123 | clickhouse     | HTTP — traces, observations, scores               |
-| 127.0.0.1:9000 | clickhouse     | Native protocol                                    |
-| 127.0.0.1:9091 | minio console  | MinIO admin UI                                     |
-| 127.0.0.1:6379 | redis          | BullMQ queue, ingestion buffers                    |
+| Port  | Service         | Purpose                                            |
+|-------|-----------------|----------------------------------------------------|
+| 3000  | langfuse-web    | UI + ingestion API (the only public-facing port)   |
+| 9090  | minio           | S3-compatible blob store (events, media, exports)  |
 
-Inbound traffic should be restricted to ports `3000` and `9090`; every other service is loopback-only.
+All other services (`langfuse-worker`, `postgres`, `clickhouse`, `redis`, the minio console) are reachable only over the Compose network. Use `docker compose exec <service>` for CLI access — e.g. `docker compose exec postgres psql -U postgres`. The MinIO console is at http://localhost:9091 when you publish it for debugging.
 
 ## Configuration
 
-All config is read from `.env` (see `.env.example`). Defaults baked into `docker-compose.yml` are insecure placeholders — the stack will start with them, but rotate every `CHANGEME` value before exposing it.
+All config is read from `.env` (see `.env.example`). Defaults baked into `docker-compose.yml` are safe for local dev but insecure for production — rotate secrets with `openssl rand -hex 32` before exposing the stack to the internet.
 
 Keys that must agree across variables: `POSTGRES_PASSWORD` and `DATABASE_URL`; `REDIS_AUTH` and the `redis` service command. `ENCRYPTION_KEY` must be exactly 64 hex chars and must never be rotated without re-encrypting stored data.
 
