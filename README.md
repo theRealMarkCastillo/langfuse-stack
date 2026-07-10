@@ -21,7 +21,7 @@ Bootstrap an org/project/user on first boot by filling the `LANGFUSE_INIT_*` var
 | 3000  | langfuse-web    | UI + ingestion API (the only public-facing port)   |
 | 9090  | minio           | S3-compatible blob store (events, media, exports)  |
 
-All other services (`langfuse-worker`, `postgres`, `clickhouse`, `redis`, the minio console) are reachable only over the Compose network. Use `docker compose exec <service>` for CLI access — e.g. `docker compose exec postgres psql -U postgres`. The MinIO console is at http://localhost:9091 when you publish it for debugging.
+All other services (`langfuse-worker`, `postgres`, `clickhouse`, `redis`, the minio console) are reachable only over the Compose network — no host ports are published for them. Use `docker compose exec <service>` for CLI access — e.g. `docker compose exec postgres psql -U postgres`. The MinIO console (container port `9001`) is not published; add a port mapping in `docker-compose.yml` if you need it for debugging.
 
 ## Configuration
 
@@ -31,6 +31,6 @@ Keys that must agree across variables: `POSTGRES_PASSWORD` and `DATABASE_URL`; `
 
 ## More
 
-- `CLAUDE.md` — architecture, request flow, full command list, backup recipes, gotchas
+- `AGENTS.md` (also available as `CLAUDE.md`) — architecture, request flow, full command list, backup recipes, gotchas
 - [Upstream self-hosting docs](https://langfuse.com/self-hosting/docker-compose)
 - [v2 → v3 upgrade guide](https://langfuse.com/self-hosting/upgrade-guides/upgrade-v2-to-v3)
